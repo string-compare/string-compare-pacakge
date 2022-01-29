@@ -41,7 +41,7 @@ export class Dp {
           const costReplace = this.resultTable[i - 1][j - 1].cost + 1;
 
           // Find min cost & update result table
-          const { operation, cost } = this.findMin(
+          const {operation, cost} = this.findMin(
             costInsert,
             costDelete,
             costReplace
@@ -51,7 +51,7 @@ export class Dp {
           this.resultTable[i][j] = this.updateResultObj({
             char: this.determineOperationString(operation, i - 1, j - 1),
             index: j - 1,
-            context: "",
+            context: '',
             cost,
             operation,
           });
@@ -84,9 +84,9 @@ export class Dp {
 
   private findMin(costInsert: number, costDelete: number, costReplace: number) {
     const costMap: Array<CostItem> = [
-      { cost: costInsert, operation: "insert" },
-      { cost: costDelete, operation: "delete" },
-      { cost: costReplace, operation: "replace" },
+      {cost: costInsert, operation: 'insert'},
+      {cost: costDelete, operation: 'delete'},
+      {cost: costReplace, operation: 'replace'},
     ];
 
     return costMap.reduce((acc, cur) => (cur.cost < acc.cost ? cur : acc));
@@ -94,11 +94,11 @@ export class Dp {
 
   private createResultObj(cost: number): ResultType {
     return {
-      char: "",
+      char: '',
       index: 0,
-      context: "",
+      context: '',
       cost,
-      operation: "",
+      operation: '',
     };
   }
 
@@ -130,14 +130,14 @@ export class Dp {
     expIdx: number
   ): string {
     switch (operation) {
-      case "insert":
+      case 'insert':
         return this.expStr[expIdx];
-      case "deletion":
+      case 'deletion':
         return this.genStr[genIdx];
-      case "replace":
+      case 'replace':
         return this.expStr[expIdx];
       default:
-        return "";
+        return '';
     }
   }
 
@@ -154,14 +154,14 @@ export class Dp {
         return _findErrors(i - 1, j - 1);
       }
       switch (this.resultTable[i][j].operation) {
-        case "insert": //  if opperation 'insert' -> move j - 1
-          this.errorList.push({ ...this.resultTable[i][j] });
+        case 'insert': //  if opperation 'insert' -> move j - 1
+          this.errorList.push({...this.resultTable[i][j]});
           return _findErrors(i, j - 1);
-        case "delete": // if opperation 'delete' -> move i - 1
-          this.errorList.push({ ...this.resultTable[i][j] });
+        case 'delete': // if opperation 'delete' -> move i - 1
+          this.errorList.push({...this.resultTable[i][j]});
           return _findErrors(i - 1, j);
-        case "replace": //  if opperation 'replace' -> move i-1, j-1
-          this.errorList.push({ ...this.resultTable[i][j] });
+        case 'replace': //  if opperation 'replace' -> move i-1, j-1
+          this.errorList.push({...this.resultTable[i][j]});
           return _findErrors(i - 1, j - 1);
       }
     };
