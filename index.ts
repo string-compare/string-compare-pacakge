@@ -14,13 +14,13 @@ interface CostItem {
 export class Dp {
   genStr: string;
   expStr: string;
-  resultTable: Array<Array<ResultType>> | null;
+  resultTable: Array<Array<ResultType>>;
   errorList: Array<ResultType>;
 
-  constructor(generatedString, expectedString) {
+  constructor(generatedString: string, expectedString: string) {
     this.genStr = generatedString;
     this.expStr = expectedString;
-    this.resultTable = null;
+    this.resultTable = [];
     this.errorList = [];
   }
 
@@ -128,7 +128,7 @@ export class Dp {
     operation: string,
     genIdx: number,
     expIdx: number
-  ) {
+  ): string {
     switch (operation) {
       case "insert":
         return this.expStr[expIdx];
@@ -136,6 +136,8 @@ export class Dp {
         return this.genStr[genIdx];
       case "replace":
         return this.expStr[expIdx];
+      default:
+        return "";
     }
   }
 
@@ -145,7 +147,7 @@ export class Dp {
       this.resultTable[0].length - 1,
     ];
 
-    const _findErrors = (i: number, j: number) => {
+    const _findErrors = (i: number, j: number): void => {
       if (i < 0 || j < 0) return;
       // If letters are equal -> move i-1, j-1
       if (this.expStr[j - 1] === this.genStr[i - 1]) {
