@@ -1,15 +1,4 @@
-interface ResultType {
-  char: string;
-  index: number;
-  context: string;
-  cost: number;
-  operation: string;
-}
-
-interface CostItem {
-  cost: number;
-  operation: string;
-}
+import {ResultType, CostItem} from './types';
 
 export class Dp {
   genStr: string;
@@ -60,6 +49,7 @@ export class Dp {
     }
 
     this.findErrors();
+    return this.errorList;
   }
 
   // privates
