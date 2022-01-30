@@ -28,7 +28,7 @@ class Dp {
                     // set the value into the table
                     this.resultTable[i][j] = this.updateResultObj({
                         char: this.determineOperationString(operation, i - 1, j - 1),
-                        index: j - 1,
+                        index: operation === 'delete' ? i - 1 : j - 1,
                         context: '',
                         cost,
                         operation,
@@ -37,7 +37,8 @@ class Dp {
             }
         }
         this.findErrors();
-        return this.errorList;
+        console.log(this.errorList);
+        return this.generateErrorArray();
     }
     // privates
     generateDpTable() {
@@ -112,19 +113,77 @@ class Dp {
                 return _findErrors(i - 1, j - 1);
             }
             switch (this.resultTable[i][j].operation) {
-                case 'insert': //  if opperation 'insert' -> move j - 1
+                case 'insert': //  if operation 'insert' -> move j - 1
                     this.errorList.push({ ...this.resultTable[i][j] });
                     return _findErrors(i, j - 1);
-                case 'delete': // if opperation 'delete' -> move i - 1
+                case 'delete': // if operation 'delete' -> move i - 1
                     this.errorList.push({ ...this.resultTable[i][j] });
                     return _findErrors(i - 1, j);
-                case 'replace': //  if opperation 'replace' -> move i-1, j-1
+                case 'replace': //  if operation 'replace' -> move i-1, j-1
                     this.errorList.push({ ...this.resultTable[i][j] });
                     return _findErrors(i - 1, j - 1);
             }
         };
         _findErrors(i, j);
     }
+    generateErrorArray() {
+        /*
+        [
+          error n, error[0]
+          error n-1, error[1]
+          error ..., error[n- 1 - x]
+          error 0: error[n-1]
+        ]
+    
+        */
+        return this.errorList.reduceRight((acc, cur, index) => {
+            if (index === this.errorList.length - 1) {
+                return [
+                    {
+                        errorString: cur.char,
+                        startIndex: cur.index,
+                        endIndex: cur.index + 1,
+                    },
+                ];
+            }
+            // console.log('acc: ', acc, '\ncur: ', cur, '\nindex: ', index);
+            // determine if concatenation is needed
+            if (cur.index === acc[acc.length - 1].endIndex) {
+                // do concatenation, or
+                acc[acc.length - 1].errorString += cur.char;
+                acc[acc.length - 1].endIndex += 1;
+                return [...acc];
+            }
+            // return concatenated object
+            return [
+                ...acc,
+                {
+                    errorString: cur.char,
+                    startIndex: cur.index,
+                    endIndex: cur.index + 1,
+                },
+            ];
+        }, []);
+    }
 }
 exports.Dp = Dp;
+// const insertExample = new Dp('this test', 'this is test go').editDistance();
+// console.log(insertExample);
+// const replaceExample = new Dp(
+//   'this df test ew',
+//   'this is test go'
+// ).editDistance();
+// console.log(replaceExample);
+const deleteExample = new Dp('this is test go', 'this test').editDistance();
+console.log(deleteExample);
+/*
+exp: The quick brown fox jumps over the fence
+gen: the brown fix jumpeasdfsasdfwerwghd over the fence
+
+errors: [
+  {operation: insert, error: quick, startIndex:4 },
+  {operation: replace, error: i, startIndex: 10},
+  {operation: }
+]
+*/
 //# sourceMappingURL=index.js.map

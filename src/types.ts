@@ -10,3 +10,9 @@ export interface CostItem {
   cost: number;
   operation: string;
 }
+
+export interface ReducedErrorItem {
+  errorString: string;
+  startIndex: number;
+  endIndex: number;
+}
