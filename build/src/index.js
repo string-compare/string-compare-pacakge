@@ -92,7 +92,7 @@ class Dp {
         switch (operation) {
             case 'insert':
                 return this.expStr[expIdx];
-            case 'deletion':
+            case 'delete':
                 return this.genStr[genIdx];
             case 'replace':
                 return this.expStr[expIdx];
@@ -127,15 +127,6 @@ class Dp {
         _findErrors(i, j);
     }
     generateErrorArray() {
-        /*
-        [
-          error n, error[0]
-          error n-1, error[1]
-          error ..., error[n- 1 - x]
-          error 0: error[n-1]
-        ]
-    
-        */
         return this.errorList.reduceRight((acc, cur, index) => {
             if (index === this.errorList.length - 1) {
                 return [
@@ -146,7 +137,6 @@ class Dp {
                     },
                 ];
             }
-            // console.log('acc: ', acc, '\ncur: ', cur, '\nindex: ', index);
             // determine if concatenation is needed
             if (cur.index === acc[acc.length - 1].endIndex) {
                 // do concatenation, or
@@ -185,5 +175,13 @@ errors: [
   {operation: replace, error: i, startIndex: 10},
   {operation: }
 ]
+*/
+/*
+  Next:
+  1. get char for deletes
+  2. Cleanup
+  3. testing (really think of edge cases)
+  4. learn about rollup
+  5. deploy to npm
 */
 //# sourceMappingURL=index.js.map

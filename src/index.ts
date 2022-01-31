@@ -123,7 +123,7 @@ export class Dp {
     switch (operation) {
       case 'insert':
         return this.expStr[expIdx];
-      case 'deletion':
+      case 'delete':
         return this.genStr[genIdx];
       case 'replace':
         return this.expStr[expIdx];
