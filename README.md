@@ -15,3 +15,10 @@ DP
 | S | 2 | 1 | 0 | 1 | 2 | 3 |
 | I | 3 | 2 | 1 | 1 | 1 | 2 |
 | N | 4 | 3 | 2 | 2 | 2 | 1 |
+
+
+$ git commit -m "Refactor usability tests.
+>
+>
+Co-authored-by: name <name@example.com>
+Co-authored-by: another-name <another-name@example.com>"
