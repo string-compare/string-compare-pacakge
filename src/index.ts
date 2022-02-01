@@ -221,7 +221,7 @@ console.log(combinedExample);
 
 // gen: guick       exp: the quick
 
-//output:
+// output:
 // gen: [the q]{g}uick
 // gen: |t|[he q]uick <-- current output
 // gen: [the ]|q|uick
