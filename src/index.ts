@@ -1,4 +1,4 @@
-import {ResultType, CostItem, ReducedErrorItem} from './types';
+import {ResultType, CostItem, ReducedErrorItem, Operation} from './types';
 
 export class Dp {
   genStr: string;
@@ -38,9 +38,8 @@ export class Dp {
 
           // set the value into the table
           this.resultTable[i][j] = this.updateResultObj({
-            char: this.determineOperationString(operation, i - 1, j - 1),
-            index: operation === 'delete' ? i - 1 : j - 1, //add a function this.determineIndex()
-            context: '',
+            char: this.determineChar(operation, i - 1, j - 1),
+            index: i - 1,
             cost,
             operation,
           });
@@ -49,7 +48,7 @@ export class Dp {
     }
 
     this.findErrors();
-    console.log(this.errorList);
+    console.log('this.errorList', this.errorList);
     return this.generateErrorArray();
   }
 
@@ -75,9 +74,9 @@ export class Dp {
 
   private findMin(costInsert: number, costDelete: number, costReplace: number) {
     const costMap: Array<CostItem> = [
-      {cost: costInsert, operation: 'insert'},
-      {cost: costDelete, operation: 'delete'},
-      {cost: costReplace, operation: 'replace'},
+      {cost: costInsert, operation: Operation.INSERT},
+      {cost: costDelete, operation: Operation.DELETE},
+      {cost: costReplace, operation: Operation.REPLACE},
     ];
 
     return costMap.reduce((acc, cur) => (cur.cost < acc.cost ? cur : acc));
@@ -87,48 +86,44 @@ export class Dp {
     return {
       char: '',
       index: 0,
-      context: '',
       cost,
-      operation: '',
+      operation: Operation.INITIAL,
     };
   }
 
   private updateResultObj({
     char,
     index,
-    context,
     cost,
     operation,
   }: {
     char: string;
     index: number;
-    context: string;
     cost: number;
-    operation: string;
+    operation: Operation;
   }) {
     return {
       char,
       index,
-      context,
       cost,
       operation,
     };
   }
 
-  private determineOperationString(
-    operation: string,
+  private determineChar(
+    operation: Operation,
     genIdx: number,
     expIdx: number
   ): string {
     switch (operation) {
-      case 'insert':
+      case Operation.INSERT:
         return this.expStr[expIdx];
-      case 'delete':
+      case Operation.DELETE:
         return this.genStr[genIdx];
-      case 'replace':
+      case Operation.REPLACE:
         return this.expStr[expIdx];
       default:
-        return '';
+        return Operation.INITIAL;
     }
   }
 
@@ -162,22 +157,38 @@ export class Dp {
   private generateErrorArray() {
     return this.errorList.reduceRight<ReducedErrorItem[]>((acc, cur, index) => {
       if (index === this.errorList.length - 1) {
+        // Initialize the Error Array
         return [
           {
             errorString: cur.char,
             startIndex: cur.index,
             endIndex: cur.index + 1,
+            operation: cur.operation,
           },
         ];
       }
 
-      // determine if concatenation is needed
-      if (cur.index === acc[acc.length - 1].endIndex) {
-        // do concatenation, or
-        acc[acc.length - 1].errorString += cur.char;
-        acc[acc.length - 1].endIndex += 1;
+      // Determine if concatenation is needed
+      if (cur.operation === acc[acc.length - 1].operation) {
+        // Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+        if (cur.index === acc[acc.length - 1].endIndex) {
+          // do concatenation, or
+          acc[acc.length - 1].errorString += cur.char;
+          acc[acc.length - 1].endIndex += 1;
 
-        return [...acc];
+          return [...acc];
+        }
+
+        // Case 2. If cur.index === acc[] -> insert operation.
+        //  NOTE: The generated string will always show an index of the start of the insertion error
+        //        therefore we need to auto increment the end index
+        if (cur.index === acc[acc.length - 1].startIndex) {
+          // do concatenation, or
+          acc[acc.length - 1].errorString += cur.char;
+          acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
+
+          return [...acc];
+        }
       }
 
       // return concatenated object
@@ -187,39 +198,30 @@ export class Dp {
           errorString: cur.char,
           startIndex: cur.index,
           endIndex: cur.index + 1,
+          operation: cur.operation,
         },
       ];
     }, []);
   }
 }
 
-// const insertExample = new Dp('this test', 'this is test go').editDistance();
-// console.log(insertExample);
-
-// const replaceExample = new Dp(
-//   'this df test ew',
-//   'this is test go'
-// ).editDistance();
-// console.log(replaceExample);
-
-const deleteExample = new Dp('this is test go', 'this test').editDistance();
-console.log(deleteExample);
-/*
-exp: The quick brown fox jumps over the fence
-gen: the brown fix jumpeasdfsasdfwerwghd over the fence
-
-errors: [
-  {operation: insert, error: quick, startIndex:4 },
-  {operation: replace, error: i, startIndex: 10},
-  {operation: }
-]
-*/
+const combinedExample = new Dp('guick', 'the quick').editDistance();
+console.log(combinedExample);
 
 /* 
   Next:
-  1. get char for deletes
-  2. Cleanup
-  3. testing (really think of edge cases)
-  4. learn about rollup
-  5. deploy to npm
+  - Clean up code
+  - Add comments
+  - Add tests
+  - figure out how it is confused
+
+  - rollup
+
 */
+
+// gen: guick       exp: the quick
+
+//output:
+// gen: [the q]{g}uick
+// gen: |t|[he q]uick <-- current output
+// gen: [the ]|q|uick

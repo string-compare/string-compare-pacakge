@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Dp = void 0;
+const types_1 = require("./types");
 class Dp {
     constructor(generatedString, expectedString) {
         this.genStr = generatedString;
@@ -27,9 +28,8 @@ class Dp {
                     const { operation, cost } = this.findMin(costInsert, costDelete, costReplace);
                     // set the value into the table
                     this.resultTable[i][j] = this.updateResultObj({
-                        char: this.determineOperationString(operation, i - 1, j - 1),
-                        index: operation === 'delete' ? i - 1 : j - 1,
-                        context: '',
+                        char: this.determineChar(operation, i - 1, j - 1),
+                        index: i - 1,
                         cost,
                         operation,
                     });
@@ -37,7 +37,7 @@ class Dp {
             }
         }
         this.findErrors();
-        console.log(this.errorList);
+        console.log('this.errorList', this.errorList);
         return this.generateErrorArray();
     }
     // privates
@@ -64,9 +64,9 @@ class Dp {
     }
     findMin(costInsert, costDelete, costReplace) {
         const costMap = [
-            { cost: costInsert, operation: 'insert' },
-            { cost: costDelete, operation: 'delete' },
-            { cost: costReplace, operation: 'replace' },
+            { cost: costInsert, operation: types_1.Operation.INSERT },
+            { cost: costDelete, operation: types_1.Operation.DELETE },
+            { cost: costReplace, operation: types_1.Operation.REPLACE },
         ];
         return costMap.reduce((acc, cur) => (cur.cost < acc.cost ? cur : acc));
     }
@@ -74,30 +74,28 @@ class Dp {
         return {
             char: '',
             index: 0,
-            context: '',
             cost,
-            operation: '',
+            operation: types_1.Operation.INITIAL,
         };
     }
-    updateResultObj({ char, index, context, cost, operation, }) {
+    updateResultObj({ char, index, cost, operation, }) {
         return {
             char,
             index,
-            context,
             cost,
             operation,
         };
     }
-    determineOperationString(operation, genIdx, expIdx) {
+    determineChar(operation, genIdx, expIdx) {
         switch (operation) {
-            case 'insert':
+            case types_1.Operation.INSERT:
                 return this.expStr[expIdx];
-            case 'delete':
+            case types_1.Operation.DELETE:
                 return this.genStr[genIdx];
-            case 'replace':
+            case types_1.Operation.REPLACE:
                 return this.expStr[expIdx];
             default:
-                return '';
+                return types_1.Operation.INITIAL;
         }
     }
     findErrors() {
@@ -129,20 +127,34 @@ class Dp {
     generateErrorArray() {
         return this.errorList.reduceRight((acc, cur, index) => {
             if (index === this.errorList.length - 1) {
+                // Initialize the Error Array
                 return [
                     {
                         errorString: cur.char,
                         startIndex: cur.index,
                         endIndex: cur.index + 1,
+                        operation: cur.operation,
                     },
                 ];
             }
-            // determine if concatenation is needed
-            if (cur.index === acc[acc.length - 1].endIndex) {
-                // do concatenation, or
-                acc[acc.length - 1].errorString += cur.char;
-                acc[acc.length - 1].endIndex += 1;
-                return [...acc];
+            // Determine if concatenation is needed
+            if (cur.operation === acc[acc.length - 1].operation) {
+                // Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+                if (cur.index === acc[acc.length - 1].endIndex) {
+                    // do concatenation, or
+                    acc[acc.length - 1].errorString += cur.char;
+                    acc[acc.length - 1].endIndex += 1;
+                    return [...acc];
+                }
+                // Case 2. If cur.index === acc[] -> insert operation.
+                //  NOTE: The generated string will always show an index of the start of the insertion error
+                //        therefore we need to auto increment the end index
+                if (cur.index === acc[acc.length - 1].startIndex) {
+                    // do concatenation, or
+                    acc[acc.length - 1].errorString += cur.char;
+                    acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
+                    return [...acc];
+                }
             }
             // return concatenated object
             return [
@@ -151,6 +163,7 @@ class Dp {
                     errorString: cur.char,
                     startIndex: cur.index,
                     endIndex: cur.index + 1,
+                    operation: cur.operation,
                 },
             ];
         }, []);
@@ -164,8 +177,18 @@ exports.Dp = Dp;
 //   'this is test go'
 // ).editDistance();
 // console.log(replaceExample);
-const deleteExample = new Dp('this is test go', 'this test').editDistance();
-console.log(deleteExample);
+// const deleteExample = new Dp('this is test go', 'this not test').editDistance();
+// console.log(deleteExample);
+// const combinedExample = new Dp(
+//   'guick brrown fix jumped on the fence',
+//   'the quick brown fox jumps over the fence'
+// ).editDistance();
+// console.log(combinedExample);
+const combinedExample = new Dp('guick', 'the quick').editDistance();
+// should have solution of:
+// {errorString: 'the ', startIndex: 0, endIndex: 4, operation: 'insert'},
+// {errorString: 'g', startIndex: 5, endIndex: 6, operation: 'delete'},
+console.log(combinedExample);
 /*
 exp: The quick brown fox jumps over the fence
 gen: the brown fix jumpeasdfsasdfwerwghd over the fence

@@ -10,7 +10,7 @@ export declare class Dp {
     private findMin;
     private createResultObj;
     private updateResultObj;
-    private determineOperationString;
+    private determineChar;
     private findErrors;
     private generateErrorArray;
 }
