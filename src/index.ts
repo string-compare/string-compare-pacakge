@@ -1,9 +1,16 @@
 import {ResultType, CostItem, ReducedErrorItem, Operation} from './types';
 
 export class Dp {
+  // String result from function
   genStr: string;
+
+  // String that is the generated string is expected to equal
   expStr: string;
+
+  // DP table that stores the cost and maps to the values desired
   resultTable: Array<Array<ResultType>>;
+
+  // Actual diversions between Generated and Expected Strings
   errorList: Array<ResultType>;
 
   constructor(generatedString: string, expectedString: string) {
@@ -13,32 +20,28 @@ export class Dp {
     this.errorList = [];
   }
 
-  // overall function
+  /* PUBLIC FUNCTIONS */
   public editDistance() {
-    this.generateDpTable();
+    this.generateResultTable();
 
     for (let i = 1; i <= this.genStr.length; i++) {
       for (let j = 1; j <= this.expStr.length; j++) {
         if (this.genStr[i - 1] === this.expStr[j - 1]) {
           this.resultTable[i][j].cost = this.resultTable[i - 1][j - 1].cost;
         } else {
-          // insertion
-          const costInsert = this.resultTable[i][j - 1].cost + 1;
-          // deletion
-          const costDelete = this.resultTable[i - 1][j].cost + 1;
-          // substitution
-          const costReplace = this.resultTable[i - 1][j - 1].cost + 1;
+          // Find the costs for each operation
+          const {costInsert, costDelete, costReplace} = this.findCosts(i, j);
 
-          // Find min cost & update result table
+          // Find the minimum cost
           const {operation, cost} = this.findMin(
             costInsert,
             costDelete,
             costReplace
           );
 
-          // set the value into the table
+          // Update the results table with the minimum cost
           this.resultTable[i][j] = this.updateResultObj({
-            char: this.determineChar(operation, i - 1, j - 1),
+            char: this.findChar(operation, i - 1, j - 1),
             index: i - 1,
             cost,
             operation,
@@ -52,8 +55,19 @@ export class Dp {
     return this.generateErrorArray();
   }
 
-  // privates
-  private generateDpTable() {
+  /* PRIVATE FUNCTIONS */
+  private generateResultTable() {
+    /* 
+    
+      Initialize the results table.
+      The first row represents the result given an empty generated string against
+      the expected string. This is represented by loading each item in the first
+      sub array with the index of the expected string.
+    
+      The first column (the first item in each row) represents the result given an
+      empty expected string. 
+
+    */
     for (let i = 0; i <= this.genStr.length; i++) {
       if (!this.resultTable) {
         this.resultTable = [[]];
@@ -62,16 +76,26 @@ export class Dp {
       }
       for (let j = 0; j <= this.expStr.length; j++) {
         if (i === 0) {
-          this.resultTable[i].push(this.createResultObj(j));
+          this.resultTable[i].push(this.createInitialResultObj(j));
         } else if (j === 0) {
-          this.resultTable[i].push(this.createResultObj(i));
+          this.resultTable[i].push(this.createInitialResultObj(i));
         } else {
-          this.resultTable[i].push(this.createResultObj(0));
+          this.resultTable[i].push(this.createInitialResultObj(0));
         }
       }
     }
   }
 
+  // Determine the cost of each operation
+  private findCosts(i: number, j: number) {
+    return {
+      costInsert: this.resultTable[i][j - 1].cost + 1,
+      costDelete: this.resultTable[i - 1][j].cost + 1,
+      costReplace: this.resultTable[i - 1][j - 1].cost + 1,
+    };
+  }
+
+  // This takes the determined costs from 'findCosts' and returns the minimum cost
   private findMin(costInsert: number, costDelete: number, costReplace: number) {
     const costMap: Array<CostItem> = [
       {cost: costInsert, operation: Operation.INSERT},
@@ -82,7 +106,8 @@ export class Dp {
     return costMap.reduce((acc, cur) => (cur.cost < acc.cost ? cur : acc));
   }
 
-  private createResultObj(cost: number): ResultType {
+  // This is the initial creation 'factory' for making result objects
+  private createInitialResultObj(cost: number): ResultType {
     return {
       char: '',
       index: 0,
@@ -91,6 +116,7 @@ export class Dp {
     };
   }
 
+  // This is the 'update' factory that creates fully operational result objects
   private updateResultObj({
     char,
     index,
@@ -110,7 +136,19 @@ export class Dp {
     };
   }
 
-  private determineChar(
+  /*
+
+    Since we are operating from the Generated string, against the Expected string,
+    we need to determine the character that was changed on the generated string. In the 
+    Insert and Replace cases the charecter that is needed for the change is found on the
+    expected string, but in the deletion case the char is found on the generated string.
+
+    This function determines the char that is needed for the change, by using the above
+    logic chained off of the operation.
+
+  */
+
+  private findChar(
     operation: Operation,
     genIdx: number,
     expIdx: number
@@ -126,6 +164,14 @@ export class Dp {
         return Operation.INITIAL;
     }
   }
+
+  /*
+  
+    Find errors uses a recursive helper to traverse the results table and find the
+    find which characters were changed. Each instance of a change is added to the
+    errorList array. 
+
+  */
 
   private findErrors() {
     const [i, j] = [
@@ -170,28 +216,34 @@ export class Dp {
 
       // Determine if concatenation is needed
       if (cur.operation === acc[acc.length - 1].operation) {
-        // Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+        /* 
+        
+          Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+
+        */
         if (cur.index === acc[acc.length - 1].endIndex) {
-          // do concatenation, or
           acc[acc.length - 1].errorString += cur.char;
           acc[acc.length - 1].endIndex += 1;
-
           return [...acc];
         }
 
-        // Case 2. If cur.index === acc[] -> insert operation.
-        //  NOTE: The generated string will always show an index of the start of the insertion error
-        //        therefore we need to auto increment the end index
+        /* 
+          
+          Case 2. If cur.index === acc[] -> insert operation.
+
+          NOTE: The generated string will always show an index of the start of the insertion error
+          therefore we need to auto increment the end index
+                
+        */
+
         if (cur.index === acc[acc.length - 1].startIndex) {
-          // do concatenation, or
           acc[acc.length - 1].errorString += cur.char;
           acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
-
           return [...acc];
         }
       }
 
-      // return concatenated object
+      // Return concatenated object --> default case
       return [
         ...acc,
         {
@@ -225,3 +277,12 @@ console.log(combinedExample);
 // gen: [the q]{g}uick
 // gen: |t|[he q]uick <-- current output
 // gen: [the ]|q|uick
+
+//Integration
+
+// import editDistance from 'library-name';
+
+// const expStr = 'expected string'
+// const genStr = 'generated string'
+
+// const diff = editDistance(genStr, expStr)
