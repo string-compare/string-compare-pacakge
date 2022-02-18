@@ -4,19 +4,21 @@ export declare enum Operation {
     REPLACE = "replace",
     INITIAL = ""
 }
-export interface ResultType {
+export declare type DpTable = Array<DpRow>;
+export declare type DpRow = Array<number>;
+export interface ErrorItem {
     char: string;
     index: number;
-    cost: number;
+    cost?: number;
+    operation: Operation;
+}
+export interface ErrorGroup {
+    errorString: string;
+    startIndex: number;
+    endIndex: number;
     operation: Operation;
 }
 export interface CostItem {
     cost: number;
-    operation: Operation;
-}
-export interface ReducedErrorItem {
-    errorString: string;
-    startIndex: number;
-    endIndex: number;
     operation: Operation;
 }
