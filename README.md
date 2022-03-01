@@ -20,4 +20,4 @@ DP
 $ git commit -m "Refactor usability tests.
 >
 >
-Co-authored-by: Justin <justin@thewordisbird.dev>
+Co-authored-by: Justin <justin@thewordisbird.dev> && Nick <nicholas.m.shankland@gmail.com>
