@@ -1,7 +1,7 @@
 {
-  "name": "edit_distance",
+  "name": "functional_edit_distance",
   "version": "1.0.0",
-  "contributers": [
+  "contributors": [
     {
       "name": "Nick Shankland",
       "email": "nicholas.m.shankland@gmail.com"
@@ -29,5 +29,7 @@
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "test": "jest --config ./jest.config.json"
-  }
+  },
+  "main": "./build/src/editDistance.js",
+  "types": "./build/src/editDistance.d.ts"
 }
