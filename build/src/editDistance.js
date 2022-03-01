@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.main = void 0;
 const types_1 = require("./types");
 function main(genStr, expStr) {
     const dpTable = generateDpTable(genStr, expStr);
     const errorItemArray = generateErrorItemArray(dpTable, genStr, expStr);
     return generateErrorGroupArray(errorItemArray);
 }
+exports.main = main;
 /*
 
   This function generates the DP table for the given strings
@@ -169,5 +171,4 @@ function generateErrorGroupArray(errorItemArray) {
         ];
     }, []);
 }
-console.log('final: ', main('nick', 'nwck'));
 //# sourceMappingURL=editDistance.js.map

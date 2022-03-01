@@ -10,7 +10,7 @@ export function main(genStr: string, expStr: string) {
 
   This function generates the DP table for the given strings
 
-  ex: 
+  example:
   genStr: 'justin'
   expStr: 'jusin'
 
