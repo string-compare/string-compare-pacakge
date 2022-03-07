@@ -44,7 +44,6 @@ enum Operation {
   INSERT = 'insert',
   DELETE = 'delete',
   REPLACE = 'replace',
-  INITIAL = '',
 }
 <br />
 </pre>
