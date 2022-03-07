@@ -8,9 +8,8 @@ We then map them into an array of objects that provide you with the error locati
 DP Table:
 
 ex:
-justin -> jusin
+justin -> nick
 
-DP
      | # | J | U | S | T | I | N |<br />
  | # | 0 | 1 | 2 | 3 | 4 | 5 | 6 |<br />
  | N | 1 | 1 | 2 | 3 | 4 | 5 | 6 |<br />
