@@ -51,5 +51,29 @@ enum Operation {
 where grouped errors (char 1-3 && all are 'delete' operations) are grouped together as one 
 object in the array. 
 
+EX: nick && justin
+
+<pre>
+<br />
+
+[   
+  { 
+    0:
+      endIndex: 4
+      errorString: "just"
+      operation: "replace"
+      startIndex: 0
+  },
+  {
+    1:
+      endIndex: 6
+      errorString: "in"
+      operation: "insert"
+      startIndex: 4
+  },
+]
+<br />
+</pre>
+
 
 Co-authored-by: Justin <justin@thewordisbird.dev> && Nick <nicholas.m.shankland@gmail.com>
