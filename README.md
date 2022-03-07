@@ -1,4 +1,4 @@
-# string-compare-pacakge
+# String Compare Package
 
 This is a package that allows you to find the quickest possible differences between two strings.
 
