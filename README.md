@@ -8,7 +8,7 @@ We then map them into an array of objects that provide you with the error locati
 DP Table:
 
 ex:
-justin -> nick
+nick -> justin
 <br />
 
 <pre>
@@ -51,7 +51,7 @@ enum Operation {
 where grouped errors (char 1-3 && all are 'delete' operations) are grouped together as one 
 object in the array. 
 
-EX: nick && justin
+EX: nick -> justin
 
 <pre>
 <br />
