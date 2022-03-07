@@ -32,14 +32,14 @@ We transform the results into the error of errors through this process and retur
 following type:
 
 <pre>
-
-interface ErrorGroup {<br />
-  errorString: string;<br />
-  startIndex: number;<br />
-  endIndex: number;< br />
-  operation: Operation;<br />
+<br />
+interface ErrorGroup {
+  errorString: string;
+  startIndex: number;
+  endIndex: number;
+  operation: Operation;
 }
-
+<br />
 </pre>
 
 where grouped errors (char 1-3 && all are 'delete' operations) are grouped together as one 
