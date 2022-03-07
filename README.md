@@ -40,6 +40,13 @@ interface ErrorGroup {
   operation: Operation;
 }
 <br />
+enum Operation {
+  INSERT = 'insert',
+  DELETE = 'delete',
+  REPLACE = 'replace',
+  INITIAL = '',
+}
+<br />
 </pre>
 
 where grouped errors (char 1-3 && all are 'delete' operations) are grouped together as one 
