@@ -10,12 +10,15 @@ DP Table:
 ex:
 justin -> nick
 
+`
      | # | J | U | S | T | I | N |<br />
  | # | 0 | 1 | 2 | 3 | 4 | 5 | 6 |<br />
  | N | 1 | 1 | 2 | 3 | 4 | 5 | 6 |<br />
  | I | 2 | 2 | 2 | 3 | 4 | 5 | 6 |<br />
  | C | 3 | 3 | 3 | 3 | 4 | 5 | 6 |<br />
  | K | 4 | 4 | 4 | 4 | 4 | 5 | 6 |<br />
+ 
+ `
 
 Through this method we determine where the 'divergences' in the paths between the two strings are 
 and proceed to start from the end solution.
