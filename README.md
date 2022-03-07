@@ -31,12 +31,16 @@ we get back to the origin.
 We transform the results into the error of errors through this process and return an array of the 
 following type:
 
+<pre>
+
 interface ErrorGroup {<br />
   errorString: string;<br />
   startIndex: number;<br />
   endIndex: number;< br />
   operation: Operation;<br />
 }
+
+</pre>
 
 where grouped errors (char 1-3 && all are 'delete' operations) are grouped together as one 
 object in the array. 
