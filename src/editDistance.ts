@@ -84,7 +84,7 @@ function generateErrorItemArray(
       {
         operation: Operation.DELETE,
         cost: costDelete,
-        char: genStr[i],
+        char: genStr[i - 1],
         index: i - 1,
       },
       {
