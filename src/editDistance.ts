@@ -80,18 +80,24 @@ function generateErrorItemArray(
         cost: costInsert,
         char: expStr[j - 1],
         index: j - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
       {
         operation: Operation.DELETE,
         cost: costDelete,
         char: genStr[i - 1],
         index: i - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
       {
         operation: Operation.REPLACE,
         cost: costReplace,
         char: expStr[j - 1],
         index: j - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
     ];
 
@@ -102,15 +108,21 @@ function generateErrorItemArray(
   function createErrorObj({
     char,
     index,
+    indexGen,
+    indexExp,
     operation,
   }: {
     char: string;
     index: number;
+    indexGen: number;
+    indexExp: number;
     operation: Operation;
   }) {
     return {
       char,
       index,
+      indexGen,
+      indexExp,
       operation,
     };
   }
@@ -127,17 +139,23 @@ function generateErrorItemArray(
       return _generateErrorItemArray(i - 1, j - 1);
     }
 
-    const {operation, char, index} = findMinChar(i, j);
+    const {operation, char, index, indexGen, indexExp} = findMinChar(i, j);
 
     switch (operation) {
       case 'insert': //  if operation 'insert' -> move j - 1
-        errorList.push(createErrorObj({char, index, operation}));
+        errorList.push(
+          createErrorObj({char, index, indexGen, indexExp, operation})
+        );
         return _generateErrorItemArray(i, j - 1);
       case 'delete': // if operation 'delete' -> move i - 1
-        errorList.push(createErrorObj({char, index, operation}));
+        errorList.push(
+          createErrorObj({char, index, indexGen, indexExp, operation})
+        );
         return _generateErrorItemArray(i - 1, j);
       case 'replace': //  if operation 'replace' -> move i-1, j-1
-        errorList.push(createErrorObj({char, index, operation}));
+        errorList.push(
+          createErrorObj({char, index, indexGen, indexExp, operation})
+        );
         return _generateErrorItemArray(i - 1, j - 1);
     }
   };
@@ -156,6 +174,8 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
           errorString: cur.char,
           startIndex: cur.index,
           endIndex: cur.index + 1,
+          expIndices: [cur.indexExp],
+          genIndices: [cur.indexGen],
           operation: cur.operation,
         },
       ];
@@ -163,29 +183,45 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
 
     // Determine if concatenation is needed
     if (cur.operation === acc[acc.length - 1].operation) {
-      /*
-
-          Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
-
-        */
+      /**
+       *
+       *  Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+       *
+       */
       if (cur.index === acc[acc.length - 1].endIndex) {
         acc[acc.length - 1].errorString += cur.char;
         acc[acc.length - 1].endIndex += 1;
+        acc[acc.length - 1].expIndices = [
+          ...acc[acc.length - 1].expIndices,
+          cur.indexExp,
+        ];
+        acc[acc.length - 1].genIndices = [
+          ...acc[acc.length - 1].genIndices,
+          cur.indexGen,
+        ];
         return [...acc];
       }
 
-      /*
-
-          Case 2. If cur.index === acc[] -> insert operation.
-
-          NOTE: The generated string will always show an index of the start of the insertion error
-          therefore we need to auto increment the end index
-
-        */
+      /**
+       *
+       *  Case 2. If cur.index === acc[] -> insert operation.
+       *
+       *  NOTE: The generated string will always show an index of the start of the insertion error
+       *  therefore we need to auto increment the end index
+       *
+       */
 
       if (cur.index === acc[acc.length - 1].startIndex) {
         acc[acc.length - 1].errorString += cur.char;
         acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
+        acc[acc.length - 1].expIndices = [
+          ...acc[acc.length - 1].expIndices,
+          cur.indexExp,
+        ];
+        acc[acc.length - 1].genIndices = [
+          ...acc[acc.length - 1].genIndices,
+          cur.indexGen,
+        ];
         return [...acc];
       }
     }
@@ -197,6 +233,8 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
         errorString: cur.char,
         startIndex: cur.index,
         endIndex: cur.index + 1,
+        expIndices: [cur.indexExp],
+        genIndices: [cur.indexGen],
         operation: cur.operation,
       },
     ];
