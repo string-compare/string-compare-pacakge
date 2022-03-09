@@ -1,9 +1,9 @@
 import {DpTable, DpRow, ErrorItem, ErrorGroup, Operation} from './types';
 
-export function main(genStr: string, expStr: string) {
-  const dpTable = generateDpTable(genStr, expStr);
-  const errorItemArray = generateErrorItemArray(dpTable, genStr, expStr);
-  return generateErrorGroupArray(errorItemArray);
+export function edit_distance(genStr: string, expStr: string) {
+  const dpTable = generate_dp_table(genStr, expStr);
+  const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
+  return generate_error_group_array(errorItemArray);
 }
 
 /*
@@ -23,7 +23,7 @@ export function main(genStr: string, expStr: string) {
   // n 5 4 3 2 2 2 1
 
 */
-function generateDpTable(genStr: string, expStr: string) {
+function generate_dp_table(genStr: string, expStr: string) {
   return ` ${genStr}`.split('').reduce(
     (outterAcc: DpTable, _, outterIdx) => [
       ...outterAcc,
@@ -53,7 +53,7 @@ function generateDpTable(genStr: string, expStr: string) {
 
 */
 
-function generateErrorItemArray(
+function generate_error_item_array(
   dpTable: DpTable,
   genStr: string,
   expStr: string
@@ -69,7 +69,7 @@ function generateErrorItemArray(
 
   */
 
-  const findMinChar = (i: number, j: number) => {
+  const find_min_char = (i: number, j: number) => {
     const costInsert = dpTable[i][j - 1];
     const costDelete = dpTable[i - 1][j];
     const costReplace = dpTable[i - 1][j - 1];
@@ -80,18 +80,24 @@ function generateErrorItemArray(
         cost: costInsert,
         char: expStr[j - 1],
         index: j - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
       {
         operation: Operation.DELETE,
         cost: costDelete,
-        char: genStr[i],
+        char: genStr[i - 1],
         index: i - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
       {
         operation: Operation.REPLACE,
         cost: costReplace,
         char: expStr[j - 1],
         index: j - 1,
+        indexGen: i - 1,
+        indexExp: j - 1,
       },
     ];
 
@@ -99,18 +105,24 @@ function generateErrorItemArray(
   };
 
   // This is the 'create' factory that creates fully operational result objects
-  function createErrorObj({
+  function create_error_obj({
     char,
     index,
+    indexGen,
+    indexExp,
     operation,
   }: {
     char: string;
     index: number;
+    indexGen: number;
+    indexExp: number;
     operation: Operation;
   }) {
     return {
       char,
       index,
+      indexGen,
+      indexExp,
       operation,
     };
   }
@@ -120,34 +132,40 @@ function generateErrorItemArray(
     Recursively traverse the table and create the error list
 
   */
-  const _generateErrorItemArray = (i: number, j: number): void => {
+  const _generate_error_item_array = (i: number, j: number): void => {
     if (i < 0 || j < 0) return;
     // If letters are equal -> move i-1, j-1
     if (expStr[j - 1] === genStr[i - 1]) {
-      return _generateErrorItemArray(i - 1, j - 1);
+      return _generate_error_item_array(i - 1, j - 1);
     }
 
-    const {operation, char, index} = findMinChar(i, j);
+    const {operation, char, index, indexGen, indexExp} = find_min_char(i, j);
 
     switch (operation) {
       case 'insert': //  if operation 'insert' -> move j - 1
-        errorList.push(createErrorObj({char, index, operation}));
-        return _generateErrorItemArray(i, j - 1);
+        errorList.push(
+          create_error_obj({char, index, indexGen, indexExp, operation})
+        );
+        return _generate_error_item_array(i, j - 1);
       case 'delete': // if operation 'delete' -> move i - 1
-        errorList.push(createErrorObj({char, index, operation}));
-        return _generateErrorItemArray(i - 1, j);
+        errorList.push(
+          create_error_obj({char, index, indexGen, indexExp, operation})
+        );
+        return _generate_error_item_array(i - 1, j);
       case 'replace': //  if operation 'replace' -> move i-1, j-1
-        errorList.push(createErrorObj({char, index, operation}));
-        return _generateErrorItemArray(i - 1, j - 1);
+        errorList.push(
+          create_error_obj({char, index, indexGen, indexExp, operation})
+        );
+        return _generate_error_item_array(i - 1, j - 1);
     }
   };
 
-  _generateErrorItemArray(i, j);
+  _generate_error_item_array(i, j);
 
   return errorList;
 }
 
-function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
+function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
   return errorItemArray.reduceRight<ErrorGroup[]>((acc, cur, index) => {
     if (index === errorItemArray.length - 1) {
       // Initialize the Error Array
@@ -156,6 +174,8 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
           errorString: cur.char,
           startIndex: cur.index,
           endIndex: cur.index + 1,
+          expIndices: [cur.indexExp],
+          genIndices: [cur.indexGen],
           operation: cur.operation,
         },
       ];
@@ -163,29 +183,45 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
 
     // Determine if concatenation is needed
     if (cur.operation === acc[acc.length - 1].operation) {
-      /*
-
-          Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
-
-        */
+      /**
+       *
+       *  Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+       *
+       */
       if (cur.index === acc[acc.length - 1].endIndex) {
         acc[acc.length - 1].errorString += cur.char;
         acc[acc.length - 1].endIndex += 1;
+        acc[acc.length - 1].expIndices = [
+          ...acc[acc.length - 1].expIndices,
+          cur.indexExp,
+        ];
+        acc[acc.length - 1].genIndices = [
+          ...acc[acc.length - 1].genIndices,
+          cur.indexGen,
+        ];
         return [...acc];
       }
 
-      /*
-
-          Case 2. If cur.index === acc[] -> insert operation.
-
-          NOTE: The generated string will always show an index of the start of the insertion error
-          therefore we need to auto increment the end index
-
-        */
+      /**
+       *
+       *  Case 2. If cur.index === acc[] -> insert operation.
+       *
+       *  NOTE: The generated string will always show an index of the start of the insertion error
+       *  therefore we need to auto increment the end index
+       *
+       */
 
       if (cur.index === acc[acc.length - 1].startIndex) {
         acc[acc.length - 1].errorString += cur.char;
         acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
+        acc[acc.length - 1].expIndices = [
+          ...acc[acc.length - 1].expIndices,
+          cur.indexExp,
+        ];
+        acc[acc.length - 1].genIndices = [
+          ...acc[acc.length - 1].genIndices,
+          cur.indexGen,
+        ];
         return [...acc];
       }
     }
@@ -197,6 +233,8 @@ function generateErrorGroupArray(errorItemArray: Array<ErrorItem>) {
         errorString: cur.char,
         startIndex: cur.index,
         endIndex: cur.index + 1,
+        expIndices: [cur.indexExp],
+        genIndices: [cur.indexGen],
         operation: cur.operation,
       },
     ];
