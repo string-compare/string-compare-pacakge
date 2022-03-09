@@ -58,11 +58,11 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 5', () => {
+    it('case: 6', () => {
         const result = (0, editDistance_1.edit_distance)('ab', 'ac');
         const expectedResult = [
             {
-                errorString: 'b',
+                errorString: 'c',
                 startIndex: 1,
                 endIndex: 2,
                 genIndices: [1],

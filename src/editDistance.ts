@@ -6,23 +6,24 @@ export function edit_distance(genStr: string, expStr: string) {
   return generate_error_group_array(errorItemArray);
 }
 
-/*
+/**
+ *
+ * This function generates the DP table for the given strings
+ *
+ * ex:
+ * genStr: 'justin'
+ * expStr: 'jusin'
+ *
+ *     j u s t i n
+ *   0 1 2 3 4 5 6
+ * j 1 0 1 2 3 4 5
+ * u 2 1 0 1 2 3 4
+ * s 3 2 1 0 1 2 3
+ * i 4 3 2 1 1 1 2
+ * n 5 4 3 2 2 2 1
+ *
+ */
 
-  This function generates the DP table for the given strings
-
-  ex:
-  genStr: 'justin'
-  expStr: 'jusin'
-
-  //     j u s t i n
-  //   0 1 2 3 4 5 6
-  // j 1 0 1 2 3 4 5
-  // u 2 1 0 1 2 3 4
-  // s 3 2 1 0 1 2 3
-  // i 4 3 2 1 1 1 2
-  // n 5 4 3 2 2 2 1
-
-*/
 function generate_dp_table(genStr: string, expStr: string) {
   return ` ${genStr}`.split('').reduce(
     (outterAcc: DpTable, _, outterIdx) => [
@@ -46,28 +47,28 @@ function generate_dp_table(genStr: string, expStr: string) {
   );
 }
 
-/*
-
-  This function generates an array of error objects based
-  on where we find the divergences between the two strings
-
-*/
+/**
+ *
+ * This function generates an array of error objects based
+ * on where we find the divergences between the two strings
+ *
+ */
 
 function generate_error_item_array(
   dpTable: DpTable,
   genStr: string,
   expStr: string
-) {
+): Array<ErrorItem> {
   // Start at the bottom right corner of the table
-  const [i, j] = [dpTable.length - 1, dpTable[0].length - 1];
+  let [i, j] = [dpTable.length - 1, dpTable[0].length - 1];
   const errorList: Array<ErrorItem> = [];
 
-  /*
-    
-    Determine the operation that is most performant at each
-    point in the table
-
-  */
+  /**
+   *
+   * Determine the operation that is most performant at each
+   * point in the table
+   *
+   */
 
   const find_min_char = (i: number, j: number) => {
     const costInsert = dpTable[i][j - 1];
@@ -127,40 +128,49 @@ function generate_error_item_array(
     };
   }
 
-  /*
+  /**
+   * Traverse the table and create error list
+   */
 
-    Recursively traverse the table and create the error list
+  /**
+   *
+   * This is a while so that we don't have to iterate through
+   * every number in the matrix. If we use the more 'functional'
+   * reduce, or map, we have to touch every number in the matrix.
+   *
+   */
 
-  */
-  const _generate_error_item_array = (i: number, j: number): void => {
-    if (i < 0 || j < 0) return;
+  while (i > 0 || j > 0) {
     // If letters are equal -> move i-1, j-1
     if (expStr[j - 1] === genStr[i - 1]) {
-      return _generate_error_item_array(i - 1, j - 1);
+      i--;
+      j--;
+    } else {
+      const {operation, char, index, indexGen, indexExp} = find_min_char(i, j);
+
+      switch (operation) {
+        case 'insert': //  if operation 'insert' -> move j - 1
+          errorList.push(
+            create_error_obj({char, index, indexGen, indexExp, operation})
+          );
+          j--;
+          break;
+        case 'delete': // if operation 'delete' -> move i - 1
+          errorList.push(
+            create_error_obj({char, index, indexGen, indexExp, operation})
+          );
+          i--;
+          break;
+        case 'replace': //  if operation 'replace' -> move i-1, j-1
+          errorList.push(
+            create_error_obj({char, index, indexGen, indexExp, operation})
+          );
+          i--;
+          j--;
+          break;
+      }
     }
-
-    const {operation, char, index, indexGen, indexExp} = find_min_char(i, j);
-
-    switch (operation) {
-      case 'insert': //  if operation 'insert' -> move j - 1
-        errorList.push(
-          create_error_obj({char, index, indexGen, indexExp, operation})
-        );
-        return _generate_error_item_array(i, j - 1);
-      case 'delete': // if operation 'delete' -> move i - 1
-        errorList.push(
-          create_error_obj({char, index, indexGen, indexExp, operation})
-        );
-        return _generate_error_item_array(i - 1, j);
-      case 'replace': //  if operation 'replace' -> move i-1, j-1
-        errorList.push(
-          create_error_obj({char, index, indexGen, indexExp, operation})
-        );
-        return _generate_error_item_array(i - 1, j - 1);
-    }
-  };
-
-  _generate_error_item_array(i, j);
+  }
 
   return errorList;
 }
