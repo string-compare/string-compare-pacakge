@@ -1,2 +1,2 @@
 import { ErrorGroup } from './types';
-export declare function main(genStr: string, expStr: string): ErrorGroup[];
+export declare function edit_distance(genStr: string, expStr: string): ErrorGroup[];

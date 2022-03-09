@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const editDistance_1 = require("../editDistance");
 describe('edit_distance', () => {
     it('case: 1', () => {
-        const result = (0, editDistance_1.main)('justin', 'jusin');
+        const result = (0, editDistance_1.edit_distance)('justin', 'jusin');
         const expectedResult = [
             {
                 errorString: 't',
@@ -17,7 +17,7 @@ describe('edit_distance', () => {
         expect(result).toEqual(expectedResult);
     });
     it('case: 2', () => {
-        const result = (0, editDistance_1.main)('justpfin', 'jusin');
+        const result = (0, editDistance_1.edit_distance)('justpfin', 'jusin');
         const expectedResult = [
             {
                 errorString: 'tpf',
@@ -31,7 +31,7 @@ describe('edit_distance', () => {
         expect(result).toEqual(expectedResult);
     });
     it('case: 3', () => {
-        const result = (0, editDistance_1.main)('jusin', 'justin');
+        const result = (0, editDistance_1.edit_distance)('jusin', 'justin');
         const expectedResult = [
             {
                 errorString: 't',
@@ -45,7 +45,7 @@ describe('edit_distance', () => {
         expect(result).toEqual(expectedResult);
     });
     it('case: 4', () => {
-        const result = (0, editDistance_1.main)('jusin', 'justpfin');
+        const result = (0, editDistance_1.edit_distance)('jusin', 'justpfin');
         const expectedResult = [
             {
                 errorString: 'tpf',
@@ -59,7 +59,7 @@ describe('edit_distance', () => {
         expect(result).toEqual(expectedResult);
     });
     it('case: 5', () => {
-        const result = (0, editDistance_1.main)('ab', 'ac');
+        const result = (0, editDistance_1.edit_distance)('ab', 'ac');
         const expectedResult = [
             {
                 errorString: 'b',
