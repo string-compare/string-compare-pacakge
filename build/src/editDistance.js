@@ -1,31 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.main = void 0;
+exports.edit_distance = void 0;
 const types_1 = require("./types");
-function main(genStr, expStr) {
-    const dpTable = generateDpTable(genStr, expStr);
-    const errorItemArray = generateErrorItemArray(dpTable, genStr, expStr);
-    return generateErrorGroupArray(errorItemArray);
+function edit_distance(genStr, expStr) {
+    const dpTable = generate_dp_table(genStr, expStr);
+    const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
+    return generate_error_group_array(errorItemArray);
 }
-exports.main = main;
-/*
-
-  This function generates the DP table for the given strings
-
-  ex:
-  genStr: 'justin'
-  expStr: 'jusin'
-
-  //     j u s t i n
-  //   0 1 2 3 4 5 6
-  // j 1 0 1 2 3 4 5
-  // u 2 1 0 1 2 3 4
-  // s 3 2 1 0 1 2 3
-  // i 4 3 2 1 1 1 2
-  // n 5 4 3 2 2 2 1
-
-*/
-function generateDpTable(genStr, expStr) {
+exports.edit_distance = edit_distance;
+/**
+ *
+ * This function generates the DP table for the given strings
+ *
+ * ex:
+ * genStr: 'justin'
+ * expStr: 'jusin'
+ *
+ *     j u s t i n
+ *   0 1 2 3 4 5 6
+ * j 1 0 1 2 3 4 5
+ * u 2 1 0 1 2 3 4
+ * s 3 2 1 0 1 2 3
+ * i 4 3 2 1 1 1 2
+ * n 5 4 3 2 2 2 1
+ *
+ */
+function generate_dp_table(genStr, expStr) {
     return ` ${genStr}`.split('').reduce((outterAcc, _, outterIdx) => [
         ...outterAcc,
         ` ${expStr}`.split('').reduce((innerAcc, _, innerIdx) => {
@@ -42,23 +42,23 @@ function generateDpTable(genStr, expStr) {
         }, []),
     ], []);
 }
-/*
-
-  This function generates an array of error objects based
-  on where we find the divergences between the two strings
-
-*/
-function generateErrorItemArray(dpTable, genStr, expStr) {
+/**
+ *
+ * This function generates an array of error objects based
+ * on where we find the divergences between the two strings
+ *
+ */
+function generate_error_item_array(dpTable, genStr, expStr) {
     // Start at the bottom right corner of the table
-    const [i, j] = [dpTable.length - 1, dpTable[0].length - 1];
+    let [i, j] = [dpTable.length - 1, dpTable[0].length - 1];
     const errorList = [];
-    /*
-      
-      Determine the operation that is most performant at each
-      point in the table
-  
-    */
-    const findMinChar = (i, j) => {
+    /**
+     *
+     * Determine the operation that is most performant at each
+     * point in the table
+     *
+     */
+    const find_min_char = (i, j) => {
         const costInsert = dpTable[i][j - 1];
         const costDelete = dpTable[i - 1][j];
         const costReplace = dpTable[i - 1][j - 1];
@@ -91,7 +91,7 @@ function generateErrorItemArray(dpTable, genStr, expStr) {
         return costArr.reduce((arr, cur) => (cur.cost < arr.cost ? cur : arr));
     };
     // This is the 'create' factory that creates fully operational result objects
-    function createErrorObj({ char, index, indexGen, indexExp, operation, }) {
+    function create_error_obj({ char, index, indexGen, indexExp, operation, }) {
         return {
             char,
             index,
@@ -100,35 +100,44 @@ function generateErrorItemArray(dpTable, genStr, expStr) {
             operation,
         };
     }
-    /*
-  
-      Recursively traverse the table and create the error list
-  
-    */
-    const _generateErrorItemArray = (i, j) => {
-        if (i < 0 || j < 0)
-            return;
+    /**
+     * Traverse the table and create error list
+     */
+    /**
+     *
+     * This is a while so that we don't have to iterate through
+     * every number in the matrix. If we use the more 'functional'
+     * reduce, or map, we have to touch every number in the matrix.
+     *
+     */
+    while (i > 0 || j > 0) {
         // If letters are equal -> move i-1, j-1
         if (expStr[j - 1] === genStr[i - 1]) {
-            return _generateErrorItemArray(i - 1, j - 1);
+            i--;
+            j--;
         }
-        const { operation, char, index, indexGen, indexExp } = findMinChar(i, j);
-        switch (operation) {
-            case 'insert': //  if operation 'insert' -> move j - 1
-                errorList.push(createErrorObj({ char, index, indexGen, indexExp, operation }));
-                return _generateErrorItemArray(i, j - 1);
-            case 'delete': // if operation 'delete' -> move i - 1
-                errorList.push(createErrorObj({ char, index, indexGen, indexExp, operation }));
-                return _generateErrorItemArray(i - 1, j);
-            case 'replace': //  if operation 'replace' -> move i-1, j-1
-                errorList.push(createErrorObj({ char, index, indexGen, indexExp, operation }));
-                return _generateErrorItemArray(i - 1, j - 1);
+        else {
+            const { operation, char, index, indexGen, indexExp } = find_min_char(i, j);
+            switch (operation) {
+                case 'insert': //  if operation 'insert' -> move j - 1
+                    errorList.push(create_error_obj({ char, index, indexGen, indexExp, operation }));
+                    j--;
+                    break;
+                case 'delete': // if operation 'delete' -> move i - 1
+                    errorList.push(create_error_obj({ char, index, indexGen, indexExp, operation }));
+                    i--;
+                    break;
+                case 'replace': //  if operation 'replace' -> move i-1, j-1
+                    errorList.push(create_error_obj({ char, index, indexGen, indexExp, operation }));
+                    i--;
+                    j--;
+                    break;
+            }
         }
-    };
-    _generateErrorItemArray(i, j);
+    }
     return errorList;
 }
-function generateErrorGroupArray(errorItemArray) {
+function generate_error_group_array(errorItemArray) {
     return errorItemArray.reduceRight((acc, cur, index) => {
         if (index === errorItemArray.length - 1) {
             // Initialize the Error Array
