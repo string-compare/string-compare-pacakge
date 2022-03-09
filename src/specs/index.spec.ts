@@ -1,13 +1,15 @@
-import {main} from '../editDistance';
+import {edit_distance} from '../editDistance';
 
 describe('edit_distance', () => {
   it('case: 1', () => {
-    const result = main('justin', 'jusin');
+    const result = edit_distance('justin', 'jusin');
     const expectedResult = [
       {
         errorString: 't',
         startIndex: 3,
         endIndex: 4,
+        expIndices: [2],
+        genIndices: [3],
         operation: 'delete',
       },
     ];
@@ -15,12 +17,14 @@ describe('edit_distance', () => {
   });
 
   it('case: 2', () => {
-    const result = main('justpfin', 'jusin');
+    const result = edit_distance('justpfin', 'jusin');
     const expectedResult = [
       {
         errorString: 'tpf',
         startIndex: 3,
         endIndex: 6,
+        expIndices: [2, 2, 2],
+        genIndices: [3, 4, 5],
         operation: 'delete',
       },
     ];
@@ -28,12 +32,14 @@ describe('edit_distance', () => {
   });
 
   it('case: 3', () => {
-    const result = main('jusin', 'justin');
+    const result = edit_distance('jusin', 'justin');
     const expectedResult = [
       {
         errorString: 't',
         startIndex: 3,
         endIndex: 4,
+        expIndices: [3],
+        genIndices: [2],
         operation: 'insert',
       },
     ];
@@ -41,12 +47,14 @@ describe('edit_distance', () => {
   });
 
   it('case: 4', () => {
-    const result = main('jusin', 'justpfin');
+    const result = edit_distance('jusin', 'justpfin');
     const expectedResult = [
       {
         errorString: 'tpf',
         startIndex: 3,
         endIndex: 6,
+        genIndices: [2, 2, 2],
+        expIndices: [3, 4, 5],
         operation: 'insert',
       },
     ];
@@ -54,12 +62,14 @@ describe('edit_distance', () => {
   });
 
   it('case: 5', () => {
-    const result = main('ab', 'ac');
+    const result = edit_distance('ab', 'ac');
     const expectedResult = [
       {
         errorString: 'b',
         startIndex: 1,
         endIndex: 2,
+        genIndices: [1],
+        expIndices: [1],
         operation: 'replace',
       },
     ];
