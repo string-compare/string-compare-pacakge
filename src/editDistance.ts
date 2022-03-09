@@ -132,14 +132,6 @@ function generate_error_item_array(
    * Traverse the table and create error list
    */
 
-  /**
-   *
-   * This is a while so that we don't have to iterate through
-   * every number in the matrix. If we use the more 'functional'
-   * reduce, or map, we have to touch every number in the matrix.
-   *
-   */
-
   while (i > 0 || j > 0) {
     // If letters are equal -> move i-1, j-1
     if (expStr[j - 1] === genStr[i - 1]) {
