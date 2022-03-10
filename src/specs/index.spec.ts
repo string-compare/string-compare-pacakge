@@ -1,4 +1,4 @@
-import {edit_distance} from '../editDistance';
+import {edit_distance} from '../edit_distance';
 
 describe('edit_distance', () => {
   it('should find one extra character on the generated string', () => {
