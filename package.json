@@ -30,6 +30,6 @@
     "posttest": "npm run lint",
     "test": "jest --config ./jest.config.json"
   },
-  "main": "./build/src/editDistance.js",
-  "types": "./build/src/editDistance.d.ts"
+  "main": "./build/src/edit_distance.js",
+  "types": "./build/src/edit_distance.d.ts"
 }
