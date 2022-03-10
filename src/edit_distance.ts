@@ -1,4 +1,5 @@
 import {DpTable, DpRow, ErrorItem, ErrorGroup, Operation} from './types';
+import {create_error_obj} from './helpers';
 
 export function edit_distance(genStr: string, expStr: string) {
   const dpTable = generate_dp_table(genStr, expStr);
@@ -104,29 +105,6 @@ function generate_error_item_array(
 
     return costArr.reduce((arr, cur) => (cur.cost < arr.cost ? cur : arr));
   };
-
-  // This is the 'create' factory that creates fully operational result objects
-  function create_error_obj({
-    char,
-    index,
-    indexGen,
-    indexExp,
-    operation,
-  }: {
-    char: string;
-    index: number;
-    indexGen: number;
-    indexExp: number;
-    operation: Operation;
-  }) {
-    return {
-      char,
-      index,
-      indexGen,
-      indexExp,
-      operation,
-    };
-  }
 
   /**
    * Traverse the table and create error list

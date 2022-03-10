@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const editDistance_1 = require("../editDistance");
+const edit_distance_1 = require("../edit_distance");
 describe('edit_distance', () => {
-    it('case: 1', () => {
-        const result = (0, editDistance_1.edit_distance)('justin', 'jusin');
+    it('should find one extra character on the generated string', () => {
+        const result = (0, edit_distance_1.edit_distance)('justin', 'jusin');
         const expectedResult = [
             {
                 errorString: 't',
@@ -16,8 +16,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 2', () => {
-        const result = (0, editDistance_1.edit_distance)('justpfin', 'jusin');
+    it('should find more than one extra character on the generated string', () => {
+        const result = (0, edit_distance_1.edit_distance)('justpfin', 'jusin');
         const expectedResult = [
             {
                 errorString: 'tpf',
@@ -30,8 +30,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 3', () => {
-        const result = (0, editDistance_1.edit_distance)('jusin', 'justin');
+    it('should find one extra character on the expected string', () => {
+        const result = (0, edit_distance_1.edit_distance)('jusin', 'justin');
         const expectedResult = [
             {
                 errorString: 't',
@@ -44,8 +44,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 4', () => {
-        const result = (0, editDistance_1.edit_distance)('jusin', 'justpfin');
+    it('should find more than one extra character on the generated string', () => {
+        const result = (0, edit_distance_1.edit_distance)('jusin', 'justpfin');
         const expectedResult = [
             {
                 errorString: 'tpf',
@@ -58,8 +58,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 5', () => {
-        const result = (0, editDistance_1.edit_distance)('ab', 'ac');
+    it('should find one replaceable character', () => {
+        const result = (0, edit_distance_1.edit_distance)('ab', 'ac');
         const expectedResult = [
             {
                 errorString: 'c',
@@ -72,8 +72,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 6', () => {
-        const result = (0, editDistance_1.edit_distance)('abf', 'acq');
+    it('should find more than one replaceable character', () => {
+        const result = (0, edit_distance_1.edit_distance)('abf', 'acq');
         const expectedResult = [
             {
                 errorString: 'cq',
@@ -86,8 +86,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 7', () => {
-        const result = (0, editDistance_1.edit_distance)('the dog and the bird', 'the cat and the bird');
+    it('should find more than one replaceable character, within a sentence', () => {
+        const result = (0, edit_distance_1.edit_distance)('the dog and the bird', 'the cat and the bird');
         const expectedResult = [
             {
                 errorString: 'cat',
@@ -100,8 +100,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 8', () => {
-        const result = (0, editDistance_1.edit_distance)('the dog and the bird', 'the and the bird');
+    it('should find more than one extra character, within a sentence', () => {
+        const result = (0, edit_distance_1.edit_distance)('the dog and the bird', 'the and the bird');
         const expectedResult = [
             {
                 errorString: ' dog',
@@ -114,8 +114,8 @@ describe('edit_distance', () => {
         ];
         expect(result).toEqual(expectedResult);
     });
-    it('case: 9', () => {
-        const result = (0, editDistance_1.edit_distance)('the dog and the bird', 'the and the big bird');
+    it('should find more than one replaceable character, and more than one extra character, within a sentence', () => {
+        const result = (0, edit_distance_1.edit_distance)('the dog and the bird', 'the and the big bird');
         const expectedResult = [
             {
                 errorString: ' dog',
