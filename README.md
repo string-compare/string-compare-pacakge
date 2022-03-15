@@ -28,7 +28,7 @@ and proceed to start from the end solution.
 We start at the bottom right corner and traverse up finding the smallest number of changes until
 we get back to the origin.
 
-We transform the results into the error of errors through this process and return an array of the 
+We transform the results into an array of errors through this process and return an array of the 
 following type:
 
 <pre>
