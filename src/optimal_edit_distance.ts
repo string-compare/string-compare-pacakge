@@ -220,8 +220,3 @@ function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
     ];
   }, []);
 }
-
-edit_distance(
-  'hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world ',
-  'hello worldhello world hello world hello world hello world hello worldhello world hello world helloa world hello world hello worldhello worldsdr hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world hello worldhello world hello world hello world hello world '
-);
