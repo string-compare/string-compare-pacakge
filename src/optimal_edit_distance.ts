@@ -1,10 +1,15 @@
-import {DpTable, DpRow, ErrorItem, ErrorGroup, Operation} from './types';
+import {DpTable, ErrorItem, ErrorGroup, Operation} from './types';
 import {create_error_obj} from './helpers';
 
 export function edit_distance(genStr: string, expStr: string) {
+  if (!genStr || !expStr) {
+    throw new Error('One or more strings are empty');
+  }
+
   const dpTable = generate_dp_table(genStr, expStr);
   const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
-  return generate_error_group_array(errorItemArray);
+  const finalResult = generate_error_group_array(errorItemArray);
+  return finalResult;
 }
 
 /**
@@ -26,7 +31,9 @@ export function edit_distance(genStr: string, expStr: string) {
  */
 
 function generate_dp_table(genStr: string, expStr: string) {
-  const buffer = new ArrayBuffer(Math.pow(expStr.length + 2, 2) * 4);
+  const buffer = new ArrayBuffer(
+    Math.pow(Math.max(genStr.length, expStr.length) + 1, 2) * 4
+  );
   const dp_table: Array<Uint32Array> = new Array(genStr.length + 1);
 
   for (let i = 0; i < genStr.length + 1; i++) {
@@ -160,89 +167,93 @@ function generate_error_item_array(
 }
 
 function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
-  return errorItemArray.reduceRight<ErrorGroup[]>((acc, cur, index) => {
-    if (index === errorItemArray.length - 1) {
-      // Initialize the Error Array
-      return [
-        {
-          errorString: cur.char,
-          startIndex: cur.index,
-          endIndex: cur.index + 1,
-          expIndices: [cur.indexExp],
-          genIndices: [cur.indexGen],
-          operation: cur.operation,
-        },
-      ];
-    }
+  // No Errors
+  if (!errorItemArray.length) {
+    return [];
+  }
 
+  // Create initial error group
+  const finalErrorGroupArray: Array<ErrorGroup> = [
+    {
+      errorString: errorItemArray[errorItemArray.length - 1].char,
+      startIndex: errorItemArray[errorItemArray.length - 1].index,
+      endIndex: errorItemArray[errorItemArray.length - 1].index + 1,
+      expIndices: [errorItemArray[errorItemArray.length - 1].indexExp],
+      genIndices: [errorItemArray[errorItemArray.length - 1].indexGen],
+      operation: errorItemArray[errorItemArray.length - 1].operation,
+    },
+  ];
+
+  // No concatenation needed
+  if (errorItemArray.length === 1) {
+    return finalErrorGroupArray;
+  }
+
+  let i = errorItemArray.length - 2;
+  while (i > -1) {
     // Determine if concatenation is needed
-    if (cur.operation === acc[acc.length - 1].operation) {
+    if (
+      errorItemArray[i].operation ===
+      finalErrorGroupArray[finalErrorGroupArray.length - 1].operation
+    ) {
       /**
        *
-       *  Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+       *  Case 1. If errorItemArray[i].index === acc[acc.length - 1].endIndex -> delete or replace operations
        *
        */
-      if (cur.index === acc[acc.length - 1].endIndex) {
-        acc[acc.length - 1].errorString += cur.char;
-        acc[acc.length - 1].endIndex += 1;
-        acc[acc.length - 1].expIndices = [
-          ...acc[acc.length - 1].expIndices,
-          cur.indexExp,
-        ];
-        acc[acc.length - 1].genIndices = [
-          ...acc[acc.length - 1].genIndices,
-          cur.indexGen,
-        ];
-        return [...acc];
+
+      if (
+        errorItemArray[i].index ===
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].endIndex
+      ) {
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].endIndex += 1;
       }
 
       /**
        *
-       *  Case 2. If cur.index === acc[] -> insert operation.
+       *  Case 2. If errorItemArray[i].index === finalErrorGroupArray[] -> insert operation.
        *
        *  NOTE: The generated string will always show an index of the start of the insertion error
        *  therefore we need to auto increment the end index
        *
        */
 
-      if (cur.index === acc[acc.length - 1].startIndex) {
-        acc[acc.length - 1].errorString += cur.char;
-        acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
-        acc[acc.length - 1].expIndices = [
-          ...acc[acc.length - 1].expIndices,
-          cur.indexExp,
-        ];
-        acc[acc.length - 1].genIndices = [
-          ...acc[acc.length - 1].genIndices,
-          cur.indexGen,
-        ];
-        return [...acc];
+      if (
+        errorItemArray[i].index ===
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].startIndex
+      ) {
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].endIndex =
+          finalErrorGroupArray[finalErrorGroupArray.length - 1].endIndex + 1;
+      }
+
+      // Increment the end index
+      finalErrorGroupArray[finalErrorGroupArray.length - 1].errorString +=
+        errorItemArray[i].char;
+
+      // Add new indices only if different than previous index
+      if (
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].expIndices[
+          finalErrorGroupArray[finalErrorGroupArray.length - 1].expIndices
+            .length - 1
+        ] !== errorItemArray[i].indexExp
+      ) {
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].expIndices.push(
+          errorItemArray[i].indexExp
+        );
+      }
+
+      if (
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].genIndices[
+          finalErrorGroupArray[finalErrorGroupArray.length - 1].genIndices
+            .length - 1
+        ] !== errorItemArray[i].indexGen
+      ) {
+        finalErrorGroupArray[finalErrorGroupArray.length - 1].genIndices.push(
+          errorItemArray[i].indexGen
+        );
       }
     }
-
-    // Return concatenated object --> default case
-    return [
-      ...acc,
-      {
-        errorString: cur.char,
-        startIndex: cur.index,
-        endIndex: cur.index + 1,
-        expIndices: [cur.indexExp],
-        genIndices: [cur.indexGen],
-        operation: cur.operation,
-      },
-    ];
-  }, []);
+    i--;
+  }
+  return finalErrorGroupArray;
 }
-
-function check_matrices(matrixOne: DpTable, matrixTwo: any) {
-  matrixOne.forEach((row, i) => {
-    row.forEach((col, j) => {
-      if (col !== matrixTwo[i][j]) {
-        throw new Error('Matrices are not equal');
-      }
-    });
-  });
-}
-
-edit_distance('hello there', 'helo theres');
