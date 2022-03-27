@@ -8,8 +8,7 @@ export function edit_distance(genStr: string, expStr: string) {
 
   const dpTable = generate_dp_table(genStr, expStr);
   const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
-  const finalResult = generate_error_group_array(errorItemArray);
-  return finalResult;
+  return generate_error_group_array(errorItemArray);
 }
 
 /**
