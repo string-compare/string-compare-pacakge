@@ -7,7 +7,7 @@ export enum Operation {
 
 export type DpTable = Array<DpRow>;
 
-export type DpRow = Array<number>;
+export type DpRow = Uint32Array;
 export interface ErrorItem {
   char: string;
   index: number;

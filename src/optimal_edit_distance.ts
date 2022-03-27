@@ -2,13 +2,9 @@ import {DpTable, DpRow, ErrorItem, ErrorGroup, Operation} from './types';
 import {create_error_obj} from './helpers';
 
 export function edit_distance(genStr: string, expStr: string) {
-  // const dpTable = generate_dp_table(genStr, expStr);
-  // const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
-  // return generate_error_group_array(errorItemArray);
-  const dpTableOne = generate_dp_table(genStr, expStr);
-  const dp_table_two = generate_dp_table_two(genStr, expStr)
-
-  console.log("one: ", dpTableOne, "two: ", dp_table_two)
+  const dpTable = generate_dp_table(genStr, expStr);
+  const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
+  return generate_error_group_array(errorItemArray);
 }
 
 /**
@@ -30,58 +26,39 @@ export function edit_distance(genStr: string, expStr: string) {
  */
 
 function generate_dp_table(genStr: string, expStr: string) {
-  return ` ${genStr}`.split('').reduce(
-    (outterAcc: DpTable, _, outterIdx) => [
-      ...outterAcc,
-      ` ${expStr}`.split('').reduce((innerAcc: DpRow, _, innerIdx) => {
-        if (outterIdx === 0) return [...innerAcc, innerIdx];
-        if (innerIdx === 0) return [...innerAcc, outterIdx];
-        if (genStr[outterIdx] === expStr[innerIdx])
-          return [...innerAcc, outterAcc[outterIdx - 1][innerIdx - 1]];
-        return [
-          ...innerAcc,
-          Math.min(
-            outterAcc[outterIdx - 1][innerIdx - 1] + 1,
-            outterAcc[outterIdx - 1][innerIdx] + 1,
-            innerAcc[innerIdx - 1] + 1
-          ),
-        ];
-      }, []),
-    ],
-    []
-  );
-}
-
-function generate_dp_table_two(genStr: string, expStr:string) {
-  const buffer = new ArrayBuffer(genStr.length * expStr.length*4);
-  const dp_table: Array<Uint32Array> = new Array(genStr.length + 1)
+  const buffer = new ArrayBuffer(Math.pow(expStr.length + 2, 2) * 4);
+  const dp_table: Array<Uint32Array> = new Array(genStr.length + 1);
 
   for (let i = 0; i < genStr.length + 1; i++) {
-    const iteration = i*expStr.length+1 * 4;
-    const length = expStr.length+1;
-    dp_table[i] = new Uint32Array(buffer, iteration, length)
+    const offset = i * (expStr.length + 1) * 4;
+    const length = expStr.length + 1;
+    dp_table[i] = new Uint32Array(buffer, offset, length);
   }
 
-
-  for (let i = 0; i < genStr.length+1; i++) {
-    for(let j = 0; j < expStr.length+1; j++) {
-      dp_table[i][j] = i
+  for (let i = 0; i < genStr.length + 1; i++) {
+    for (let j = 0; j < expStr.length + 1; j++) {
+      dp_table[i][j] = i;
       if (i === 0) {
-        dp_table[i][j] = j
+        dp_table[i][j] = j;
         continue;
       }
       if (j === 0) {
-        dp_table[i][j] = i
+        dp_table[i][j] = i;
         continue;
       }
       if (genStr[i] === expStr[j]) {
-        dp_table[i][j] = dp_table[i-1][j-1];
+        dp_table[i][j] = dp_table[i - 1][j - 1];
       } else {
-        dp_table[i][j] = Math.min(dp_table[i][j-1], dp_table[i-1][j], dp_table[i-1][j-1]) + 1;
+        dp_table[i][j] =
+          Math.min(
+            dp_table[i][j - 1],
+            dp_table[i - 1][j],
+            dp_table[i - 1][j - 1]
+          ) + 1;
       }
     }
   }
-  
+
   return dp_table;
 }
 
@@ -258,4 +235,14 @@ function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
   }, []);
 }
 
-edit_distance("hello", 'helo')
+function check_matrices(matrixOne: DpTable, matrixTwo: any) {
+  matrixOne.forEach((row, i) => {
+    row.forEach((col, j) => {
+      if (col !== matrixTwo[i][j]) {
+        throw new Error('Matrices are not equal');
+      }
+    });
+  });
+}
+
+edit_distance('hello there', 'helo theres');
