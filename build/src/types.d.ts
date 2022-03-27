@@ -5,7 +5,7 @@ export declare enum Operation {
     INITIAL = ""
 }
 export declare type DpTable = Array<DpRow>;
-export declare type DpRow = Array<number>;
+export declare type DpRow = Uint32Array | Array<number>;
 export interface ErrorItem {
     char: string;
     index: number;
