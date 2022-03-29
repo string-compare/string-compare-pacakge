@@ -166,7 +166,6 @@ function generate_error_item_array(
 }
 
 function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
-  console.log('error item array: ', errorItemArray);
   // No Errors
   if (!errorItemArray.length) {
     return [];
