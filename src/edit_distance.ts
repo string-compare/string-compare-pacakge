@@ -1,7 +1,11 @@
-import {DpTable, DpRow, ErrorItem, ErrorGroup, Operation} from './types';
+import {DpTable, ErrorItem, ErrorGroup, Operation} from './types';
 import {create_error_obj} from './helpers';
 
 export function edit_distance(genStr: string, expStr: string) {
+  if (!genStr || !expStr) {
+    throw new Error('One or more strings are empty');
+  }
+
   const dpTable = generate_dp_table(genStr, expStr);
   const errorItemArray = generate_error_item_array(dpTable, genStr, expStr);
   return generate_error_group_array(errorItemArray);
@@ -26,26 +30,42 @@ export function edit_distance(genStr: string, expStr: string) {
  */
 
 function generate_dp_table(genStr: string, expStr: string) {
-  return ` ${genStr}`.split('').reduce(
-    (outterAcc: DpTable, _, outterIdx) => [
-      ...outterAcc,
-      ` ${expStr}`.split('').reduce((innerAcc: DpRow, _, innerIdx) => {
-        if (outterIdx === 0) return [...innerAcc, innerIdx];
-        if (innerIdx === 0) return [...innerAcc, outterIdx];
-        if (genStr[outterIdx] === expStr[innerIdx])
-          return [...innerAcc, outterAcc[outterIdx - 1][innerIdx - 1]];
-        return [
-          ...innerAcc,
-          Math.min(
-            outterAcc[outterIdx - 1][innerIdx - 1] + 1,
-            outterAcc[outterIdx - 1][innerIdx] + 1,
-            innerAcc[innerIdx - 1] + 1
-          ),
-        ];
-      }, []),
-    ],
-    []
+  const buffer = new ArrayBuffer(
+    Math.pow(Math.max(genStr.length, expStr.length) + 1, 2) * 4
   );
+  const dp_table: Array<Uint32Array> = new Array(genStr.length + 1);
+
+  for (let i = 0; i < genStr.length + 1; i++) {
+    const offset = i * (expStr.length + 1) * 4;
+    const length = expStr.length + 1;
+    dp_table[i] = new Uint32Array(buffer, offset, length);
+  }
+
+  for (let i = 0; i < genStr.length + 1; i++) {
+    for (let j = 0; j < expStr.length + 1; j++) {
+      dp_table[i][j] = i;
+      if (i === 0) {
+        dp_table[i][j] = j;
+        continue;
+      }
+      if (j === 0) {
+        dp_table[i][j] = i;
+        continue;
+      }
+      if (genStr[i] === expStr[j]) {
+        dp_table[i][j] = dp_table[i - 1][j - 1];
+      } else {
+        dp_table[i][j] =
+          Math.min(
+            dp_table[i][j - 1],
+            dp_table[i - 1][j],
+            dp_table[i - 1][j - 1]
+          ) + 1;
+      }
+    }
+  }
+
+  return dp_table;
 }
 
 /**
@@ -146,77 +166,87 @@ function generate_error_item_array(
 }
 
 function generate_error_group_array(errorItemArray: Array<ErrorItem>) {
-  return errorItemArray.reduceRight<ErrorGroup[]>((acc, cur, index) => {
-    if (index === errorItemArray.length - 1) {
-      // Initialize the Error Array
-      return [
-        {
-          errorString: cur.char,
-          startIndex: cur.index,
-          endIndex: cur.index + 1,
-          expIndices: [cur.indexExp],
-          genIndices: [cur.indexGen],
-          operation: cur.operation,
-        },
-      ];
-    }
+  console.log('error item array: ', errorItemArray);
+  // No Errors
+  if (!errorItemArray.length) {
+    return [];
+  }
 
+  // Create initial error group
+  const finalErrorGroupArray: Array<ErrorGroup> = [
+    {
+      errorString: errorItemArray[errorItemArray.length - 1].char,
+      startIndex: errorItemArray[errorItemArray.length - 1].index,
+      endIndex: errorItemArray[errorItemArray.length - 1].index + 1,
+      expIndices: [errorItemArray[errorItemArray.length - 1].indexExp],
+      genIndices: [errorItemArray[errorItemArray.length - 1].indexGen],
+      operation: errorItemArray[errorItemArray.length - 1].operation,
+    },
+  ];
+
+  // No concatenation needed
+  if (errorItemArray.length === 1) {
+    return finalErrorGroupArray;
+  }
+
+  let i = errorItemArray.length - 2;
+  while (i > -1) {
+    const errorGroup = finalErrorGroupArray[finalErrorGroupArray.length - 1];
+    const errorItem = errorItemArray[i];
     // Determine if concatenation is needed
-    if (cur.operation === acc[acc.length - 1].operation) {
+    if (errorItem.operation === errorGroup.operation) {
       /**
        *
-       *  Case 1. If cur.index === acc[acc.length - 1].endIndex -> delete or replace operations
+       *  Case 1. If errorItem.index === acc[acc.length - 1].endIndex -> delete or replace operations
        *
        */
-      if (cur.index === acc[acc.length - 1].endIndex) {
-        acc[acc.length - 1].errorString += cur.char;
-        acc[acc.length - 1].endIndex += 1;
-        acc[acc.length - 1].expIndices = [
-          ...acc[acc.length - 1].expIndices,
-          cur.indexExp,
-        ];
-        acc[acc.length - 1].genIndices = [
-          ...acc[acc.length - 1].genIndices,
-          cur.indexGen,
-        ];
-        return [...acc];
+
+      if (errorItem.index === errorGroup.endIndex) {
+        errorGroup.endIndex += 1;
       }
 
       /**
        *
-       *  Case 2. If cur.index === acc[] -> insert operation.
+       *  Case 2. If errorItem.index === finalErrorGroupArray[] -> insert operation.
        *
        *  NOTE: The generated string will always show an index of the start of the insertion error
        *  therefore we need to auto increment the end index
        *
        */
 
-      if (cur.index === acc[acc.length - 1].startIndex) {
-        acc[acc.length - 1].errorString += cur.char;
-        acc[acc.length - 1].endIndex = acc[acc.length - 1].endIndex + 1;
-        acc[acc.length - 1].expIndices = [
-          ...acc[acc.length - 1].expIndices,
-          cur.indexExp,
-        ];
-        acc[acc.length - 1].genIndices = [
-          ...acc[acc.length - 1].genIndices,
-          cur.indexGen,
-        ];
-        return [...acc];
+      if (errorItem.index === errorGroup.startIndex) {
+        errorGroup.endIndex = errorGroup.endIndex + 1;
       }
-    }
 
-    // Return concatenated object --> default case
-    return [
-      ...acc,
-      {
-        errorString: cur.char,
-        startIndex: cur.index,
-        endIndex: cur.index + 1,
-        expIndices: [cur.indexExp],
-        genIndices: [cur.indexGen],
-        operation: cur.operation,
-      },
-    ];
-  }, []);
+      // Increment the end index
+      errorGroup.errorString += errorItem.char;
+
+      // Add new indices only if different than previous index
+      if (
+        errorGroup.expIndices[errorGroup.expIndices.length - 1] !==
+        errorItem.indexExp
+      ) {
+        errorGroup.expIndices.push(errorItem.indexExp);
+      }
+
+      if (
+        errorGroup.genIndices[errorGroup.genIndices.length - 1] !==
+        errorItem.indexGen
+      ) {
+        errorGroup.genIndices.push(errorItem.indexGen);
+      }
+    } else {
+      // Create new error group
+      finalErrorGroupArray.push({
+        errorString: errorItem.char,
+        startIndex: errorItem.index,
+        endIndex: errorItem.index + 1,
+        expIndices: [errorItem.indexExp],
+        genIndices: [errorItem.indexGen],
+        operation: errorItem.operation,
+      });
+    }
+    i--;
+  }
+  return finalErrorGroupArray;
 }

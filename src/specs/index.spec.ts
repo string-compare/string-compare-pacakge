@@ -23,7 +23,7 @@ describe('edit_distance', () => {
         errorString: 'tpf',
         startIndex: 3,
         endIndex: 6,
-        expIndices: [2, 2, 2],
+        expIndices: [2],
         genIndices: [3, 4, 5],
         operation: 'delete',
       },
@@ -53,7 +53,7 @@ describe('edit_distance', () => {
         errorString: 'tpf',
         startIndex: 3,
         endIndex: 6,
-        genIndices: [2, 2, 2],
+        genIndices: [2],
         expIndices: [3, 4, 5],
         operation: 'insert',
       },
@@ -116,7 +116,7 @@ describe('edit_distance', () => {
         startIndex: 3,
         endIndex: 7,
         genIndices: [3, 4, 5, 6],
-        expIndices: [2, 2, 2, 2],
+        expIndices: [2],
         operation: 'delete',
       },
     ];
@@ -128,20 +128,21 @@ describe('edit_distance', () => {
       'the dog and the bird',
       'the and the big bird'
     );
+
     const expectedResult = [
       {
         errorString: ' dog',
         startIndex: 3,
         endIndex: 7,
         genIndices: [3, 4, 5, 6],
-        expIndices: [2, 2, 2, 2],
+        expIndices: [2],
         operation: 'delete',
       },
       {
         errorString: ' big',
         startIndex: 11,
         endIndex: 15,
-        genIndices: [14, 14, 14, 14],
+        genIndices: [14],
         expIndices: [11, 12, 13, 14],
         operation: 'insert',
       },
